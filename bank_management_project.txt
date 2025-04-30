@@ -1,0 +1,97 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_USERS 100
+
+typedef struct {
+    char name[50];
+    int account_number;
+    char password[20];
+    float balance;
+} Account;
+
+Account users[MAX_USERS];
+int user_count = 0;
+
+void saveToFile() {
+    FILE *file = fopen("accounts.txt", "w");
+    for (int i = 0; i < user_count; i++) {
+        fprintf(file, "%s %d %s %.2f\n", users[i].name, users[i].account_number, users[i].password, users[i].balance);
+    }
+    fclose(file);
+}
+
+int createAccount() {
+    printf("Enter name: ");
+    scanf("%s", users[user_count].name);
+    printf("Enter account number: ");
+    scanf("%d", &users[user_count].account_number);
+    printf("Enter password: ");
+    scanf("%s", users[user_count].password);
+    users[user_count].balance = 0.0;
+    user_count++;
+    saveToFile();
+    printf("Account created successfully.\n");
+    return 0;
+}
+
+int login() {
+    int acc;
+    char pass[20];
+    printf("Account number: ");
+    scanf("%d", &acc);
+    printf("Password: ");
+    scanf("%s", pass);
+
+    for (int i = 0; i < user_count; i++) {
+        if (users[i].account_number == acc && strcmp(users[i].password, pass) == 0) {
+            printf("Login successful.\n");
+            int choice;
+            printf("1. Deposit\n2. Transfer\n3. Check Balance\nChoice: ");
+            scanf("%d", &choice);
+
+            if (choice == 1) {
+                float amount;
+                printf("Enter amount: ");
+                scanf("%f", &amount);
+                users[i].balance += amount;
+            } else if (choice == 2) {
+                int to_acc;
+                float amount;
+                printf("Enter target account number: ");
+                scanf("%d", &to_acc);
+                printf("Enter amount: ");
+                scanf("%f", &amount);
+                for (int j = 0; j < user_count; j++) {
+                    if (users[j].account_number == to_acc) {
+                        users[i].balance -= amount;
+                        users[j].balance += amount;
+                        break;
+                    }
+                }
+            } else if (choice == 3) {
+                printf("Balance: %.2f\n", users[i].balance);
+            }
+
+            saveToFile();
+            return 1;
+        }
+    }
+    printf("Invalid login.\n");
+    return 0;
+}
+
+int main() {
+    int choice;
+    do {
+        printf("1. Create Account\n2. Login\n3. Quit\nChoice: ");
+        scanf("%d", &choice);
+        switch (choice) {
+            case 1: createAccount(); break;
+            case 2: login(); break;
+        }
+    } while (choice != 3);
+    return 0;
+}
